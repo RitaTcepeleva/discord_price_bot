@@ -2,8 +2,11 @@ from bs4 import BeautifulSoup
 import requests
 import json
 import emoji
+from pycoingecko import CoinGeckoAPI
 
-def get_info():
+cg = CoinGeckoAPI()
+
+def get_info(disco_mem):
     web_req = requests.get('https://www.dapp.com/app/rubic')
     content = BeautifulSoup(web_req.text, 'html.parser')
     assets = content.find_all('div', class_='sub-stats-item')
@@ -13,8 +16,12 @@ def get_info():
     tvl = assets[0].contents[2].text.replace('\n                        ', ' ')
     assets = content.find_all('div', class_='contract')
     contracts = assets[0].contents[2].text+': '+assets[0].contents[0].text.replace('\xa0', '')
-    str = users_24+'\n'+total_uni_us+'\n'+tvl+'\n'+contracts
-    return str
+    ############
+    token = cg.get_coin_by_id(id='rubic', community_data='true')
+    twitters = str(token['community_data']['twitter_followers'])
+    telegram_followers = str(token['community_data']['telegram_channel_user_count'])
+    result = users_24+'\n'+total_uni_us+'\n'+tvl+'\n'+contracts+'\nTwitter followers: '+twitters+'\nTelegram followers: '+telegram_followers+'\nDiscord members: '+disco_mem
+    return result
 
 #print(get_info())
 
@@ -26,8 +33,15 @@ def get_price():
     return propose_gas_price, status_price
 
 def get_liq():
-    web_req = requests.get('https://www.dextools.io/app/uniswap/pair-explorer/0x10db37f4d9b3bc32ae8303b46e6166f7e9652d28')
-    content = BeautifulSoup(web_req.text, 'html.parser')
-    assets = content.find_all('ul')
+    #PRICE INFO
+    rbc_usd = cg.get_price(ids='rubic', vs_currencies='usd')['rubic']['usd']
+    one_eth = 1 / cg.get_price(ids='rubic', vs_currencies='eth')['rubic']['eth']
+    #MARKET INFO
+    market_cap = cg.get_coins_markets(ids='rubic', vs_currency='usd')[0]['market_cap']
+    fully_market_cap = cg.get_coins_markets(ids='rubic', vs_currency='usd')[0]['fully_diluted_valuation']
+    circ_sup = cg.get_coins_markets(ids='rubic', vs_currency='usd')[0]['circulating_supply']
+    total_sup = cg.get_coins_markets(ids='rubic', vs_currency='usd')[0]['total_supply']
+    total_volume = cg.get_coins_markets(ids='rubic', vs_currency='usd')[0]['total_volume']
+    return rbc_usd, one_eth, market_cap, fully_market_cap, circ_sup, total_sup, total_volume
 
-#print(get_liq())
+#get_liq()

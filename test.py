@@ -1,19 +1,29 @@
-import discord
-import json
-import requests
+# import the module
+import tweepy
 
-client = discord.Client()
+# assign the values accordingly
+consumer_key = ""
+consumer_secret = ""
+access_token = ""
+access_token_secret = ""
 
-@client.event
-async def on_ready():
-    print('We have logged in as {0.user}'.format(client))
+# authorization of consumer key and consumer secret
+auth = tweepy.OAuthHandler(consumer_key, consumer_secret)
 
-@client.event
-async def on_message(message):
-    if message.author == client.user:
-        return
+# set access to user's access key and access secret
+auth.set_access_token(access_token, access_token_secret)
 
-    if message.content.startswith('$hello'):
-        await message.channel.send('Hello!')
+# calling the api
+api = tweepy.API(auth)
 
-client.run('your token here')
+# the screen_name of the targeted user
+screen_name = "geeksforgeeks"
+
+# getting all the followers
+c = tweepy.Cursor(api.followers, screen_name)
+
+# counting the number of followers
+count = 0
+for follower in c.items():
+    count += 1
+print(screen_name + " has " + str(count) + " followers.")
